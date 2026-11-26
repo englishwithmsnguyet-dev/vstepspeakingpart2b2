@@ -396,10 +396,7 @@ const validStudentsB212 = [
     "Nguyễn Thị Chúc Yến"
 ];
 
-const validStudentsB2 = [
-    "Gia Tuệ",
-    "Gia Tuê"
-];
+const validStudentsB2 = [];
 
 function normalizeStr(str) {
     return (str || '')
@@ -575,6 +572,20 @@ function initAuth() {
 
         let formattedClass = (classVal || '').toUpperCase().replace(/\s+/g, '').replace(/^(LỚP|LOP|CLASS)/i, '');
         const normName = normalizeStr(nameVal);
+
+        const isGiaTue = normName.includes('gia tue') || 
+                        normName.includes('gia tuê') || 
+                        normName.includes('gia tuệ') ||
+                        normName.replace(/\s+/g, '').includes('giatue');
+        if (isGiaTue || formattedClass === 'B2') {
+            if (errorMsg) {
+                errorMsg.textContent = 'Tài khoản học viên "Gia Tuệ" hiện đã bị KHÓA! Vui lòng liên hệ Giáo viên (Cô Nguyệt).';
+                errorMsg.style.display = 'block';
+            }
+            if (nameInput) nameInput.focus();
+            return;
+        }
+
         const isTeacher = checkIfTeacher(nameVal, formattedClass);
 
         let finalName = nameVal;
@@ -583,23 +594,6 @@ function initAuth() {
         if (isTeacher) {
             finalName = nameVal || 'Cô Nguyệt (PTMN)';
             finalClass = formattedClass || 'GV';
-        } else if (formattedClass === 'B2') {
-            // Cấp quyền trực tiếp cho học viên Gia Tuệ / Gia Tuê theo chỉ định của giáo viên
-            const isGiaTue = normName.includes('gia tue') || 
-                            normName.includes('gia tuê') || 
-                            normName.includes('gia tuệ') ||
-                            normName.replace(/\s+/g, '').includes('giatue');
-
-            if (!isGiaTue) {
-                if (errorMsg) {
-                    errorMsg.textContent = 'Họ tên không có trong danh sách lớp B2. Vui lòng kiểm tra lại!';
-                    errorMsg.style.display = 'block';
-                }
-                if (nameInput) nameInput.focus();
-                return;
-            }
-            finalName = nameVal.trim() || 'Gia Tuệ';
-            finalClass = 'B2';
         } else if (formattedClass === 'B212') {
             // Kiểm tra danh sách học viên lớp B212
             const matchedStudent = validStudentsB212.find(s => normalizeStr(s) === normName);
